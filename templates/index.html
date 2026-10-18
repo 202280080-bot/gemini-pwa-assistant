@@ -1,0 +1,155 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#3458db">
+  <meta name="description" content="A simple student-friendly Gemini AI assistant.">
+
+  <title>Gemini AI Assistant</title>
+
+  <!-- PWA manifest -->
+  <link rel="manifest" href="/manifest.webmanifest">
+
+  <!-- App icon -->
+  <link rel="icon" type="image/png" sizes="192x192" href="{% static 'icons/icon-192.png' %}">
+
+  <!-- Mobile app settings -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="AI Assistant">
+
+  <!-- Stylesheets -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+
+<body>
+  <main class="app-shell">
+
+    <!-- Header -->
+    <header class="topbar">
+      <div class="brand-mark" aria-hidden="true">✦</div>
+
+      <div>
+        <h1>AI Assistant</h1>
+        <p>Learn something new today</p>
+      </div>
+
+      <button id="installBtn" class="btn btn-outline-primary btn-sm ms-auto" type="button" hidden>
+        Install app
+      </button>
+    </header>
+
+    <!-- Welcome section -->
+    <section class="welcome-card">
+      <div class="sparkle" aria-hidden="true">✦</div>
+
+      <h2>Hi! How can I help you?</h2>
+      <p>Ask a question, get an explanation, or ask for step-by-step help.</p>
+
+      <div class="suggestions">
+        <button type="button" class="suggestion" data-prompt="Explain the OSI Physical Layer in simple words.">
+          Explain a topic
+        </button>
+
+        <button type="button" class="suggestion"
+          data-prompt="Help me understand this programming problem step by step.">
+          Study programming
+        </button>
+
+        <button type="button" class="suggestion"
+          data-prompt="Give me a short reviewer and a 5-item quiz about database systems.">
+          Make a reviewer
+        </button>
+      </div>
+    </section>
+
+    <!-- Chat messages -->
+    <section id="conversation" class="conversation" aria-live="polite" aria-label="Conversation">
+
+      <div class="message assistant-message">
+        <div class="avatar" aria-hidden="true">✦</div>
+
+        <div class="bubble">
+          Hello! I’m your AI study assistant. Type a question below and I’ll do my best to help.
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Offline status -->
+    <div id="offlineNotice" class="offline-notice" hidden>
+      <span class="status-dot" aria-hidden="true"></span>
+      You’re offline. The app screen is available, but AI answers need internet.
+    </div>
+
+    <!-- Chat input -->
+    <form id="chatForm" class="composer">
+      {% csrf_token %}
+
+      <label class="visually-hidden" for="messageInput">
+        Your message
+      </label>
+
+      <textarea id="messageInput" name="message" rows="1" maxlength="8000" placeholder="Ask anything..."
+        required></textarea>
+
+      <button id="sendBtn" type="submit" aria-label="Send message">
+        <span aria-hidden="true">➤</span>
+      </button>
+    </form>
+
+    <p class="privacy-note">
+      AI can make mistakes. Check important information. Your API key stays on the server.
+    </p>
+
+  </main>
+
+  <!-- Existing chat functionality -->
+  <script src="{% static 'js/app.js' %}" defer></script>
+
+  <!-- PWA service worker registration -->
+  <script>
+    (() => {
+      const offlineNotice = document.getElementById('offlineNotice');
+
+      function updateOnlineStatus() {
+        if (offlineNotice) {
+          offlineNotice.hidden = navigator.onLine;
+        }
+      }
+
+      window.addEventListener('online', updateOnlineStatus);
+      window.addEventListener('offline', updateOnlineStatus);
+      updateOnlineStatus();
+
+      if (!('serviceWorker' in navigator)) {
+        console.warn('Service workers are not supported by this browser.');
+        return;
+      }
+
+      window.addEventListener('load', async () => {
+        try {
+          const registration =
+            await navigator.serviceWorker.register('/service-worker.js');
+
+          console.info(
+            'Service worker registered successfully:',
+            registration.scope
+          );
+        } catch (error) {
+          console.error(
+            'Service worker registration failed:',
+            error
+          );
+        }
+      });
+    })();
+  </script>
+
+</body>
+
+</html>
